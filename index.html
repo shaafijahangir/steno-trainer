@@ -19,6 +19,7 @@
   --good-soft: #cfeedd;
   --bad: #c8372f;
   --bad-soft: #f6d3d0;
+  --f-pinky: #d9782a; --f-ring: #b89400; --f-middle: #2f9a5a; --f-index: #3576d6; --f-thumb: #9a52b8;
   --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
   --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
@@ -27,13 +28,13 @@
   :root:not([data-theme="light"]) {
     --bg: #12151c; --surface: #1a1e27; --ink: #e9ecf2; --muted: #9aa2b2; --line: #2d3340;
     --key: #252b37; --key-ink: #d6dbe5; --accent: #41c6cc; --accent-soft: #123c40;
-    --good: #46c97f; --good-soft: #143826; --bad: #ff6b60; --bad-soft: #43201d; color-scheme: dark;
+    --good: #46c97f; --good-soft: #143826; --bad: #ff6b60; --bad-soft: #43201d; --f-pinky: #f0a05a; --f-ring: #e0c13a; --f-middle: #5cc98a; --f-index: #6fa6f5; --f-thumb: #c48ae0; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #12151c; --surface: #1a1e27; --ink: #e9ecf2; --muted: #9aa2b2; --line: #2d3340;
   --key: #252b37; --key-ink: #d6dbe5; --accent: #41c6cc; --accent-soft: #123c40;
-  --good: #46c97f; --good-soft: #143826; --bad: #ff6b60; --bad-soft: #43201d; color-scheme: dark;
+  --good: #46c97f; --good-soft: #143826; --bad: #ff6b60; --bad-soft: #43201d; --f-pinky: #f0a05a; --f-ring: #e0c13a; --f-middle: #5cc98a; --f-index: #6fa6f5; --f-thumb: #c48ae0; color-scheme: dark;
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -122,6 +123,20 @@ button:hover, select:hover { border-color: var(--accent); }
 .chips span { border: 1px solid var(--bad); color: var(--bad); border-radius: 6px; padding: 1px 7px; }
 .notes { color: var(--muted); font-size: 13px; max-width: 80ch; }
 .notes p { margin: 0 0 6px; }
+/* Finger guide: a coloured stripe along the bottom of each key, same colour for the same finger on both hands. */
+.key[data-finger] { box-shadow: inset 0 -4px 0 var(--fc); }
+[data-finger="pinky"] { --fc: var(--f-pinky); }
+[data-finger="ring"] { --fc: var(--f-ring); }
+[data-finger="middle"] { --fc: var(--f-middle); }
+[data-finger="index"] { --fc: var(--f-index); }
+[data-finger="thumb"] { --fc: var(--f-thumb); }
+.fswatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; background: var(--fc); vertical-align: -1px; margin-right: 5px; }
+.fchip { display: inline-flex; align-items: center; margin-right: 12px; font-family: var(--font-body); font-size: 14px; }
+.hands { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 10px 24px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 14px; }
+@media (max-width: 860px) { .hands { grid-template-columns: minmax(0, 1fr); } }
+.hands h3 { font-family: var(--font-display); font-weight: 600; font-size: 1rem; margin: 0 0 6px; }
+.hands ul { margin: 0; padding-left: 18px; display: grid; gap: 3px; }
+.flegend { display: flex; flex-wrap: wrap; gap: 6px 16px; }
 @media (prefers-reduced-motion: reduce) { .key { transition: none; } }
 </style>
 
@@ -193,6 +208,29 @@ button:hover, select:hover { border-color: var(--accent); }
       <span><i class="lx"></i>Wrong key</span>
       <span><i class="lm"></i>Missed key</span>
     </div>
+    <div class="hands">
+      <div>
+        <h3>Which finger</h3>
+        <div class="flegend">
+          <span class="fchip" data-finger="pinky"><span class="fswatch"></span>Pinky</span>
+          <span class="fchip" data-finger="ring"><span class="fswatch"></span>Ring</span>
+          <span class="fchip" data-finger="middle"><span class="fswatch"></span>Middle</span>
+          <span class="fchip" data-finger="index"><span class="fswatch"></span>Index</span>
+          <span class="fchip" data-finger="thumb"><span class="fswatch"></span>Thumb</span>
+        </div>
+        <p class="notes" style="margin:8px 0 0">The coloured line under each key shows the finger for it. Each hand uses the same colours.</p>
+      </div>
+      <div>
+        <h3>Hand position</h3>
+        <ul>
+          <li>Rest each finger on the <b>gap between two rows</b>. Left hand: pinky between <b>q/a</b>, ring <b>w/s</b>, middle <b>e/d</b>, index <b>r/f</b>. Right hand: index <b>u/j</b>, middle <b>i/k</b>, ring <b>o/l</b>, and pinky between <b>p</b> and <b>;</b></li>
+          <li>Press the top key, the bottom key, or <b>both at once</b> by pressing on the gap. That is how one finger plays two steno keys, like T and K together.</li>
+          <li>Thumbs rest on <b>c v</b> (left) and <b>n m</b> (right). Each thumb can press both of its keys at once.</li>
+          <li>Each index finger reaches one column toward the middle for the star (<b>t g</b> or <b>y h</b>). The right pinky also covers <b>[</b> and <b>'</b>.</li>
+          <li>Keep your hands still and press straight down. Only the index fingers (for the star) and the right pinky (for <b>[</b> and <b>'</b>) reach sideways.</li>
+        </ul>
+      </div>
+    </div>
   </section>
 
   <section class="panel summary" id="summary" hidden>
@@ -227,6 +265,15 @@ button:hover, select:hover { border-color: var(--accent); }
     '-E':'n', '-U':'m', '-F':'u', '-R':'j', '-P':'i', '-B':'k', '-L':'o', '-G':'l', '-T':'p', '-S':';', '-D':'[', '-Z':"'" };
   const ALT_QWERTY = { 'S-':'a or q', '*':'t g y h' };
   const letter = k => k.replace('-', '');
+  // Which finger plays each steno key. The star belongs to either index finger.
+  const STENO_FINGER = { 'S-':'L pinky', 'T-':'L ring', 'K-':'L ring', 'P-':'L middle', 'W-':'L middle', 'H-':'L index', 'R-':'L index',
+    'A-':'L thumb', 'O-':'L thumb', '*':'either index', '-E':'R thumb', '-U':'R thumb', '-F':'R index', '-R':'R index',
+    '-P':'R middle', '-B':'R middle', '-L':'R ring', '-G':'R ring', '-T':'R pinky', '-S':'R pinky', '-D':'R pinky', '-Z':'R pinky' };
+  const QWERTY_FINGER = { KeyQ:'pinky', KeyA:'pinky', KeyW:'ring', KeyS:'ring', KeyE:'middle', KeyD:'middle',
+    KeyR:'index', KeyF:'index', KeyT:'index', KeyG:'index', KeyC:'thumb', KeyV:'thumb', KeyN:'thumb', KeyM:'thumb',
+    KeyY:'index', KeyH:'index', KeyU:'index', KeyJ:'index', KeyI:'middle', KeyK:'middle', KeyO:'ring', KeyL:'ring',
+    KeyP:'pinky', Semicolon:'pinky', BracketLeft:'pinky', Quote:'pinky' };
+  const fingerOf = k => (STENO_FINGER[k] || '').split(' ').pop();
 
   const LESSONS = [
     { id:'keys', name:'1. Find the keys', chordOnly:true, words: ORDER.slice(1).map(k => [k === '*' ? '*' : k, k === '*' ? '*' : (k.startsWith('-') ? k : letter(k))]) },
@@ -286,6 +333,7 @@ button:hover, select:hover { border-color: var(--accent); }
     const el = document.createElement('div');
     el.className = 'key' + (cls ? ' ' + cls : '');
     el.dataset.steno = k;
+    if (STENO_FINGER[k]) el.dataset.finger = fingerOf(k);
     el.style.gridRow = cls === 'tall' ? `${r} / span 2` : r;
     if (cls !== 'num') el.style.gridColumn = c;
     el.innerHTML = `${k === '#' ? '# number bar' : letter(k)}<span class="pair">${k === '#' ? '' : (ALT_QWERTY[k] ? ALT_QWERTY[k].replace(' or ', '/').replace(/ /g, '') : MAIN_QWERTY[k])}</span>`;
@@ -307,6 +355,7 @@ button:hover, select:hover { border-color: var(--accent); }
       const st = CODE_TO_STENO[code];
       el.className = 'key' + (st ? '' : ' idle');
       el.dataset.code = code;
+      if (QWERTY_FINGER[code]) el.dataset.finger = QWERTY_FINGER[code];
       el.innerHTML = `${lab}${st ? `<span class="pair">${st === '#' ? '#' : letter(st)}</span>` : ''}`;
       row.appendChild(el);
     }
@@ -453,7 +502,14 @@ button:hover, select:hover { border-color: var(--accent); }
     if (!showHint()) { h.innerHTML = '<span class="lbl">Hint hidden until you miss</span>'; return; }
     const ks = ORDER.filter(k => cur.keys.has(k));
     const q = ks.map(k => `<span class="qk">${esc(ALT_QWERTY[k] || MAIN_QWERTY[k])}</span>`).join(' + ');
-    h.innerHTML = `<span><span class="lbl">Steno</span>${esc(cur.s)}</span><span><span class="lbl">Press together</span>${q}</span>`;
+    const groups = new Map();
+    for (const k of ks) {
+      const name = STENO_FINGER[k].replace(/^L /, 'left ').replace(/^R /, 'right ');
+      if (!groups.has(name)) groups.set(name, { finger: fingerOf(k), keys: [] });
+      groups.get(name).keys.push(k === '*' ? 't g y h' : MAIN_QWERTY[k]);
+    }
+    const f = [...groups].map(([name, g]) => `<span class="fchip" data-finger="${g.finger}"><span class="fswatch"></span>${esc(name)} (${esc(g.keys.join(' + '))})</span>`).join('');
+    h.innerHTML = `<span><span class="lbl">Steno</span>${esc(cur.s)}</span><span><span class="lbl">Press together</span>${q}</span><span><span class="lbl">Fingers</span>${f}</span>`;
   }
   function renderStats() {
     $('sProgress').textContent = `${Math.min(pos, queue.length)} / ${queue.length}`;

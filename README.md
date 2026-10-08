@@ -60,6 +60,18 @@ Other settings:
 - **Order:** lesson order, or shuffled.
 - At the end of a lesson you can practise only the words you got wrong.
 
+## Which finger goes where
+
+Every key has a coloured line along its bottom edge showing the finger that presses it: pinky, ring, middle, index, or thumb. The same finger has the same colour on both hands. The hint for each word also lists the fingers, for example *her* = left index (r), right thumb (n), right index (j).
+
+Hand position:
+
+- Rest each finger on the **gap between two rows**. Left hand: pinky between `q`/`a`, ring `w`/`s`, middle `e`/`d`, index `r`/`f`. Right hand: index `u`/`j`, middle `i`/`k`, ring `o`/`l`, pinky between `p` and `;`.
+- Press the top key, the bottom key, or **both at once** by pressing on the gap. That is how one finger plays two steno keys, like T and K together.
+- Thumbs rest on `c` `v` (left) and `n` `m` (right). Each thumb can press both of its keys at once.
+- Each index finger reaches one column toward the middle for the star (`t` `g` or `y` `h`). The right pinky also covers `[` and `'`.
+- Keep your hands still and press straight down. Only the index fingers and the right pinky reach sideways.
+
 ## The key map
 
 This is Plover's default layout for a QWERTY keyboard. The page shows it on the keyboards themselves; the table is here for reference.

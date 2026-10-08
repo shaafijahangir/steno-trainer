@@ -1,0 +1,546 @@
+<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Steno on QWERTY</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one practice column. Word strip on top, the two keyboards side by side underneath, paired key-for-key. */
+:root {
+  --bg: #eef0f4;
+  --surface: #ffffff;
+  --ink: #141822;
+  --muted: #5b6372;
+  --line: #d6dae3;
+  --key: #e6e9f0;
+  --key-ink: #2a3040;
+  --accent: #0b7a80;
+  --accent-soft: #c9ecec;
+  --good: #1d8f4e;
+  --good-soft: #cfeedd;
+  --bad: #c8372f;
+  --bad-soft: #f6d3d0;
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12151c; --surface: #1a1e27; --ink: #e9ecf2; --muted: #9aa2b2; --line: #2d3340;
+    --key: #252b37; --key-ink: #d6dbe5; --accent: #41c6cc; --accent-soft: #123c40;
+    --good: #46c97f; --good-soft: #143826; --bad: #ff6b60; --bad-soft: #43201d; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12151c; --surface: #1a1e27; --ink: #e9ecf2; --muted: #9aa2b2; --line: #2d3340;
+  --key: #252b37; --key-ink: #d6dbe5; --accent: #41c6cc; --accent-soft: #123c40;
+  --good: #46c97f; --good-soft: #143826; --bad: #ff6b60; --bad-soft: #43201d; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding-inline: 16px; padding-block: 20px 48px; }
+.wrap { max-width: 1180px; margin: 0 auto; display: grid; gap: 18px; }
+
+header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 24px; }
+h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(1.6rem, 3vw, 2.1rem); line-height: 1.1; margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+h1 span { color: var(--accent); }
+.sub { margin: 4px 0 0; color: var(--muted); max-width: 60ch; }
+
+.controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+label.ctl { display: grid; gap: 2px; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+select, button { font: inherit; font-size: 14px; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; }
+button { cursor: pointer; font-weight: 500; }
+button:hover, select:hover { border-color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.seg button { border: 0; border-radius: 0; padding: 7px 12px; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--surface); }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px; }
+.modebar { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; font-size: 14px; }
+.modebar .status { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; }
+.dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); }
+.dot.on { background: var(--good); }
+.modebar .tip { color: var(--muted); }
+
+.stats { display: flex; flex-wrap: wrap; gap: 6px 28px; font-variant-numeric: tabular-nums; }
+.stat b { display: block; font-family: var(--font-display); font-size: 1.5rem; line-height: 1.1; }
+.stat small { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; }
+
+.practice { display: grid; gap: 16px; }
+.strip { display: flex; align-items: baseline; gap: 16px; overflow: hidden; white-space: nowrap; font-family: var(--font-mono); font-size: 18px; color: var(--muted); min-height: 2.2em; }
+.strip .cur { font-family: var(--font-display); font-weight: 800; font-size: clamp(2.2rem, 6vw, 3.4rem); color: var(--ink); border-bottom: 3px solid var(--accent); line-height: 1.1; }
+.strip .done { opacity: .35; text-decoration: line-through; }
+.hintline { display: flex; flex-wrap: wrap; gap: 6px 22px; align-items: baseline; font-family: var(--font-mono); font-size: 15px; min-height: 1.6em; }
+.hintline .lbl { font-family: var(--font-body); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-right: 6px; }
+.hintline .qk { display: inline-block; min-width: 1.6em; text-align: center; padding: 0 5px; margin: 0 1px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; background: var(--key); }
+.feedback { font-weight: 600; min-height: 1.5em; }
+.feedback.good { color: var(--good); }
+.feedback.bad { color: var(--bad); }
+#wordInput { font: inherit; font-family: var(--font-mono); font-size: 20px; width: min(100%, 420px); padding: 10px 12px; border: 2px solid var(--accent); border-radius: 10px; background: var(--bg); color: var(--ink); }
+
+.boards { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.25fr); gap: 18px; align-items: start; }
+@media (max-width: 860px) { .boards { grid-template-columns: minmax(0, 1fr); } }
+.board h2 { font-family: var(--font-display); font-weight: 600; font-size: 1rem; margin: 0 0 10px; display: flex; justify-content: space-between; gap: 8px; }
+.board h2 small { font-family: var(--font-body); font-weight: 400; color: var(--muted); font-size: 12px; }
+
+.key { position: relative; display: grid; place-items: center; border-radius: 7px; background: var(--key); color: var(--key-ink); border: 1px solid var(--line); border-bottom-width: 3px; font-family: var(--font-mono); font-weight: 600; transition: background .08s, transform .08s, border-color .08s; user-select: none; }
+.key .pair { position: absolute; right: 4px; bottom: 1px; font-size: 10px; font-weight: 400; color: var(--muted); }
+.key.idle { opacity: .4; }
+.key.target { background: var(--accent-soft); border-color: var(--accent); color: var(--ink); }
+.key.pressed { background: var(--ink); color: var(--bg); border-color: var(--ink); transform: translateY(1px); }
+.key.pressed .pair { color: var(--bg); opacity: .7; }
+.key.hit { background: var(--good-soft); border-color: var(--good); color: var(--ink); }
+.key.extra { background: var(--bad-soft); border-color: var(--bad); color: var(--ink); }
+.key.missed { background: transparent; border: 2px dashed var(--bad); color: var(--bad); }
+.boards.flash-good .key.target, .boards.flash-good .key.hit { background: var(--good); border-color: var(--good); color: var(--surface); }
+
+/* Steno board: 10 columns, S and * span the two main rows, number bar on top, vowels below. */
+.steno { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); grid-template-rows: 22px repeat(3, auto); gap: 5px; }
+.steno .key { aspect-ratio: 1 / 1.05; font-size: clamp(13px, 1.6vw, 18px); }
+.steno .num { grid-column: 1 / -1; aspect-ratio: auto; font-size: 11px; }
+.steno .tall { grid-row: span 2; aspect-ratio: auto; }
+
+/* QWERTY board: every row is 13 units wide; offsets match a real staggered keyboard. */
+.qwerty { display: grid; gap: 5px; }
+.qrow { display: flex; gap: 5px; }
+.qrow .sp { flex: var(--u) 0 0; }
+.qrow .key { flex: 1 1 0; min-width: 0; aspect-ratio: 1 / 1.05; font-size: clamp(12px, 1.4vw, 16px); }
+.qrow .key.space { aspect-ratio: auto; height: 30px; flex: 6 1 0; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 12px; color: var(--muted); }
+.legend i { display: inline-block; width: 14px; height: 14px; border-radius: 4px; vertical-align: -2px; margin-right: 6px; border: 1px solid var(--line); }
+.legend .lt { background: var(--accent-soft); border-color: var(--accent); }
+.legend .lp { background: var(--ink); }
+.legend .lh { background: var(--good-soft); border-color: var(--good); }
+.legend .lx { background: var(--bad-soft); border-color: var(--bad); }
+.legend .lm { border: 2px dashed var(--bad); }
+
+.summary { display: grid; gap: 10px; }
+.summary h2 { font-family: var(--font-display); margin: 0; font-size: 1.5rem; }
+.summary .row { display: flex; flex-wrap: wrap; gap: 10px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; font-family: var(--font-mono); font-size: 13px; }
+.chips span { border: 1px solid var(--bad); color: var(--bad); border-radius: 6px; padding: 1px 7px; }
+.notes { color: var(--muted); font-size: 13px; max-width: 80ch; }
+.notes p { margin: 0 0 6px; }
+@media (prefers-reduced-motion: reduce) { .key { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Steno on <span>QWERTY</span></h1>
+      <p class="sub">Each steno key, and the key you press for it on your own keyboard. Hold the whole chord, then let go.</p>
+    </div>
+    <div class="controls">
+      <label class="ctl" for="lessonSel">Lesson
+        <select id="lessonSel"></select>
+      </label>
+      <label class="ctl">Mode
+        <span class="seg" role="group" aria-label="Mode">
+          <button id="modeChord" type="button" aria-pressed="true">Chord</button>
+          <button id="modeWord" type="button" aria-pressed="false">Plover</button>
+        </span>
+      </label>
+      <label class="ctl" for="hintSel">Hints
+        <select id="hintSel">
+          <option value="always">Always show</option>
+          <option value="miss">After a mistake</option>
+        </select>
+      </label>
+      <label class="ctl" for="orderSel">Order
+        <select id="orderSel">
+          <option value="lesson">Lesson order</option>
+          <option value="shuffle">Shuffled</option>
+        </select>
+      </label>
+      <label class="ctl">&nbsp;<button id="restartBtn" type="button">Restart</button></label>
+    </div>
+  </header>
+
+  <div class="panel modebar">
+    <span class="status"><span class="dot" id="focusDot"></span><span id="statusText">Click the page, then start chording</span></span>
+    <span class="tip" id="modeTip"></span>
+  </div>
+
+  <section class="panel practice" id="practice">
+    <div class="stats">
+      <div class="stat"><b id="sProgress">0 / 0</b><small>Words</small></div>
+      <div class="stat"><b id="sWpm">0</b><small>WPM</small></div>
+      <div class="stat"><b id="sAcc">100%</b><small>Accuracy</small></div>
+      <div class="stat"><b id="sMiss">0</b><small>Misstrokes</small></div>
+    </div>
+    <div class="strip" id="strip" aria-live="polite"></div>
+    <div class="hintline" id="hintline"></div>
+    <div id="wordBox" hidden>
+      <input id="wordInput" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Turn Plover on, then stroke here">
+    </div>
+    <div class="feedback" id="feedback"></div>
+
+    <div class="boards" id="boards">
+      <div class="board">
+        <h2>Steno keyboard <small>small letter = your key</small></h2>
+        <div class="steno" id="steno"></div>
+      </div>
+      <div class="board">
+        <h2>Your keyboard <small>small letter = steno key</small></h2>
+        <div class="qwerty" id="qwerty"></div>
+      </div>
+    </div>
+    <div class="legend">
+      <span><i class="lt"></i>Press this</span>
+      <span><i class="lp"></i>Held down</span>
+      <span><i class="lh"></i>Right key</span>
+      <span><i class="lx"></i>Wrong key</span>
+      <span><i class="lm"></i>Missed key</span>
+    </div>
+  </section>
+
+  <section class="panel summary" id="summary" hidden>
+    <h2 id="sumTitle">Lesson done</h2>
+    <div id="sumText"></div>
+    <div class="chips" id="sumMiss"></div>
+    <div class="row">
+      <button id="againBtn" type="button">Go again</button>
+      <button id="missBtn" type="button">Practise misstroked words</button>
+    </div>
+  </section>
+
+  <div class="notes">
+    <p><b>Chord mode</b> reads your keys directly, so <b>turn Plover off</b> first. You see exactly which keys you held on both keyboards, and the chord is checked when you let go of every key.</p>
+    <p><b>Plover mode</b> is the real thing. <b>Turn Plover on</b>, click the box, and stroke the word. Plover types it, and the page checks the word it typed.</p>
+    <p>S can be pressed with <b>a</b> or <b>q</b>. The star (*) can be any of <b>t g y h</b>. Strokes come from Plover's own dictionary.</p>
+  </div>
+</div>
+
+<script>
+(() => {
+  // Steno key order and the QWERTY keys Plover assigns to each (Plover's default Keyboard map).
+  const ORDER = ['#','S-','T-','K-','P-','W-','H-','R-','A-','O-','*','-E','-U','-F','-R','-P','-B','-L','-G','-T','-S','-D','-Z'];
+  const CODE_TO_STENO = {
+    KeyQ:'S-', KeyA:'S-', KeyW:'T-', KeyS:'K-', KeyE:'P-', KeyD:'W-', KeyR:'H-', KeyF:'R-',
+    KeyC:'A-', KeyV:'O-', KeyT:'*', KeyG:'*', KeyY:'*', KeyH:'*',
+    KeyN:'-E', KeyM:'-U', KeyU:'-F', KeyJ:'-R', KeyI:'-P', KeyK:'-B', KeyO:'-L', KeyL:'-G',
+    KeyP:'-T', Semicolon:'-S', BracketLeft:'-D', Quote:'-Z',
+    Digit1:'#', Digit2:'#', Digit3:'#', Digit4:'#', Digit5:'#', Digit6:'#', Digit7:'#', Digit8:'#', Digit9:'#', Digit0:'#', Minus:'#', Equal:'#'
+  };
+  const MAIN_QWERTY = { '#':'1', 'S-':'a', 'T-':'w', 'K-':'s', 'P-':'e', 'W-':'d', 'H-':'r', 'R-':'f', 'A-':'c', 'O-':'v', '*':'h',
+    '-E':'n', '-U':'m', '-F':'u', '-R':'j', '-P':'i', '-B':'k', '-L':'o', '-G':'l', '-T':'p', '-S':';', '-D':'[', '-Z':"'" };
+  const ALT_QWERTY = { 'S-':'a or q', '*':'t g y h' };
+  const letter = k => k.replace('-', '');
+
+  const LESSONS = [
+    { id:'keys', name:'1. Find the keys', chordOnly:true, words: ORDER.slice(1).map(k => [k === '*' ? '*' : k, k === '*' ? '*' : (k.startsWith('-') ? k : letter(k))]) },
+    { id:'intro', name:'2. First words', words: [["was","WAZ"],["her","HER"],["has","HAZ"],["part","PART"],["put","PUT"],["set","SET"],["war","WAR"],["kept","KEPT"],["sort","SORT"],["top","TOP"],["step","STEP"],["per","PER"],["hot","HOT"],["soft","SOFT"],["spot","SPOT"],["stop","STOP"]] },
+    { id:'common', name:'3. 100 common words', words: [["the","-T"],["of","-F"],["and","SKP"],["to","TO"],["a","AEU"],["in","TPH"],["is","S"],["it","T"],["you","U"],["that","THA"],["he","HE"],["for","TP-R"],["on","OPB"],["are","R"],["with","W"],["as","AZ"],["I","EU"],["his","HEUS"],["they","THE"],["be","-B"],["at","AT"],["one","WUPB"],["have","SR"],["this","TH"],["from","TPR"],["or","OR"],["had","H"],["by","PWEU"],["not","TPHOT"],["word","WORD"],["but","PWU"],["what","WHA"],["some","SOPL"],["we","WE"],["can","K"],["out","OUT"],["other","OER"],["were","WR"],["all","AUL"],["there","THR"],["when","WH"],["up","UP"],["use","AOUS"],["your","KWROUR"],["how","HOU"],["said","SAEUD"],["an","APB"],["each","AOEFP"],["she","SHE"],["which","WEU"],["do","TKO"],["their","THAEUR"],["time","TAOEUPL"],["if","TP"],["will","HR"],["way","WAEU"],["about","PW"],["many","PHAEPB"],["then","THEPB"],["them","THEPL"],["write","WREU"],["would","WO"],["like","HRAOEUBG"],["so","SO"],["these","THEZ"],["long","HROPBG"],["make","PHAEUBG"],["thing","THEUPBG"],["see","SAOE"],["him","HEUPL"],["two","TWO"],["look","HRAOBG"],["more","PHOR"],["day","TKAEU"],["could","KO"],["go","TKPWO"],["come","KOPL"],["did","TK"],["number","TPHUPL"],["sound","SOUPBD"],["no","TPHO"],["most","PHOEFT"],["people","PAOEPL"],["my","PHAOEU"],["over","OEFR"],["know","TPHOE"],["water","WAUR"],["than","THAPB"],["call","KAUL"],["first","TPEUFRT"],["who","WHO"],["may","PHAEU"],["down","TKOUPB"],["side","SAOEUD"],["been","PW-PB"],["now","TPHOU"],["find","TPAOEUPBD"]] }
+  ];
+
+  // "TP-R" -> Set{T-,P-,-R}. Walks the steno order so each letter lands on the right side.
+  function parseStroke(s) {
+    const keys = new Set(); let i = 0;
+    for (const ch of s) {
+      if (ch === '-') { i = Math.max(i, ORDER.indexOf('-E')); continue; }
+      let j = i;
+      while (j < ORDER.length && letter(ORDER[j]) !== ch) j++;
+      if (j === ORDER.length) continue;
+      keys.add(ORDER[j]); i = j + 1;
+    }
+    return keys;
+  }
+  // Set -> "TP-R" in steno order, with a hyphen only when the right side needs one.
+  function formatStroke(set) {
+    let left = '', mid = '', right = '';
+    for (const k of ORDER) {
+      if (!set.has(k)) continue;
+      if (k === '#' || (k.endsWith('-') && !['A-','O-'].includes(k))) left += letter(k);
+      else if (['A-','O-','*','-E','-U'].includes(k)) mid += letter(k);
+      else right += letter(k);
+    }
+    return left + mid + (right && !mid ? '-' : '') + right;
+  }
+  const sameSet = (a, b) => a.size === b.size && [...a].every(k => b.has(k));
+
+  // ---------- state ----------
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem('stq.' + k); return v === null ? d : v; } catch { return d; } },
+    set(k, v) { try { localStorage.setItem('stq.' + k, v); } catch {} }
+  };
+  let lessonId = store.get('lesson', 'intro');
+  let mode = store.get('mode', 'chord');
+  let hintMode = store.get('hints', 'always');
+  let order = store.get('order', 'lesson');
+  let queue = [], pos = 0, misses = 0, attempts = 0, missedWords = new Set(), wordMissed = false, startedAt = 0;
+  let held = new Set(), chordCodes = new Set(), chordKeys = new Set(), result = null, flashTimer = 0;
+
+  const $ = id => document.getElementById(id);
+  const lesson = () => LESSONS.find(l => l.id === lessonId) || LESSONS[1];
+
+  // ---------- build keyboards ----------
+  const stenoEl = $('steno');
+  const STENO_LAYOUT = [
+    ['#', 1, 1, 'num'],
+    ['S-', 2, 1, 'tall'], ['T-', 2, 2], ['P-', 2, 3], ['H-', 2, 4], ['*', 2, 5, 'tall'], ['-F', 2, 6], ['-P', 2, 7], ['-L', 2, 8], ['-T', 2, 9], ['-D', 2, 10],
+    ['K-', 3, 2], ['W-', 3, 3], ['R-', 3, 4], ['-R', 3, 6], ['-B', 3, 7], ['-G', 3, 8], ['-S', 3, 9], ['-Z', 3, 10],
+    ['A-', 4, 3], ['O-', 4, 4], ['-E', 4, 6], ['-U', 4, 7]
+  ];
+  for (const [k, r, c, cls] of STENO_LAYOUT) {
+    const el = document.createElement('div');
+    el.className = 'key' + (cls ? ' ' + cls : '');
+    el.dataset.steno = k;
+    el.style.gridRow = cls === 'tall' ? `${r} / span 2` : r;
+    if (cls !== 'num') el.style.gridColumn = c;
+    el.innerHTML = `${k === '#' ? '# number bar' : letter(k)}<span class="pair">${k === '#' ? '' : (ALT_QWERTY[k] ? ALT_QWERTY[k].replace(' or ', '/').replace(/ /g, '') : MAIN_QWERTY[k])}</span>`;
+    stenoEl.appendChild(el);
+  }
+
+  const QROWS = [
+    [0, [['Backquote','`'],['Digit1','1'],['Digit2','2'],['Digit3','3'],['Digit4','4'],['Digit5','5'],['Digit6','6'],['Digit7','7'],['Digit8','8'],['Digit9','9'],['Digit0','0'],['Minus','-'],['Equal','=']]],
+    [0.5, [['KeyQ','q'],['KeyW','w'],['KeyE','e'],['KeyR','r'],['KeyT','t'],['KeyY','y'],['KeyU','u'],['KeyI','i'],['KeyO','o'],['KeyP','p'],['BracketLeft','['],['BracketRight',']']]],
+    [0.75, [['KeyA','a'],['KeyS','s'],['KeyD','d'],['KeyF','f'],['KeyG','g'],['KeyH','h'],['KeyJ','j'],['KeyK','k'],['KeyL','l'],['Semicolon',';'],['Quote',"'"]]],
+    [1.25, [['KeyZ','z'],['KeyX','x'],['KeyC','c'],['KeyV','v'],['KeyB','b'],['KeyN','n'],['KeyM','m'],['Comma',','],['Period','.'],['Slash','/']]],
+  ];
+  const qEl = $('qwerty');
+  for (const [off, keys] of QROWS) {
+    const row = document.createElement('div'); row.className = 'qrow';
+    const lead = document.createElement('span'); lead.className = 'sp'; lead.style.setProperty('--u', off); row.appendChild(lead);
+    for (const [code, lab] of keys) {
+      const el = document.createElement('div');
+      const st = CODE_TO_STENO[code];
+      el.className = 'key' + (st ? '' : ' idle');
+      el.dataset.code = code;
+      el.innerHTML = `${lab}${st ? `<span class="pair">${st === '#' ? '#' : letter(st)}</span>` : ''}`;
+      row.appendChild(el);
+    }
+    const trail = document.createElement('span'); trail.className = 'sp'; trail.style.setProperty('--u', 13 - off - keys.length); row.appendChild(trail);
+    qEl.appendChild(row);
+  }
+  const spaceRow = document.createElement('div'); spaceRow.className = 'qrow';
+  spaceRow.innerHTML = '<span class="sp" style="--u:3.5"></span><div class="key space idle">space</div><span class="sp" style="--u:3.5"></span>';
+  qEl.appendChild(spaceRow);
+  const stenoKeys = [...stenoEl.querySelectorAll('.key')];
+  const qwertyKeys = [...qEl.querySelectorAll('.key[data-code]')];
+
+  // ---------- lesson flow ----------
+  function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+  function start(words) {
+    const base = (words || lesson().words).map(([w, s]) => ({ w, s, keys: parseStroke(s) }));
+    queue = order === 'shuffle' ? shuffle(base) : base;
+    pos = 0; misses = 0; attempts = 0; missedWords = new Set(); wordMissed = false; startedAt = 0;
+    resetChord(); result = null;
+    $('summary').hidden = true; $('practice').hidden = false;
+    $('wordInput').value = '';
+    setFeedback('');
+    renderAll();
+  }
+  const current = () => queue[pos];
+
+  function advance() {
+    pos++; wordMissed = false; result = null;
+    if (pos >= queue.length) return finish();
+    renderAll();
+  }
+  function finish() {
+    const mins = startedAt ? (Date.now() - startedAt) / 60000 : 0;
+    const wpm = mins > 0 ? Math.round(queue.length / mins) : 0;
+    const acc = attempts ? Math.round(100 * queue.length / attempts) : 100;
+    $('practice').hidden = true; $('summary').hidden = false;
+    $('sumTitle').textContent = `${lesson().name.replace(/^\d+\.\s*/, '')}: done`;
+    $('sumText').textContent = `${queue.length} words at ${wpm} WPM, ${acc}% accuracy, ${misses} misstroke${misses === 1 ? '' : 's'}.`;
+    $('sumMiss').innerHTML = [...missedWords].map(w => `<span>${esc(w)}</span>`).join('');
+    $('missBtn').hidden = missedWords.size === 0;
+  }
+  function esc(s) { return s.replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c])); }
+
+  function markMiss() {
+    misses++; attempts++; wordMissed = true; missedWords.add(current().w);
+  }
+  function markHit() {
+    attempts++; if (!startedAt) startedAt = Date.now();
+  }
+
+  // ---------- chord mode input ----------
+  function resetChord() { held.clear(); chordCodes.clear(); chordKeys.clear(); }
+  window.addEventListener('keydown', e => {
+    if (mode !== 'chord' || $('practice').hidden) return;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    const st = CODE_TO_STENO[e.code];
+    if (!st) return;
+    e.preventDefault();
+    if (e.repeat) return;
+    if (held.size === 0 && chordKeys.size === 0) { result = null; setFeedback(''); }
+    held.add(e.code); chordCodes.add(e.code); chordKeys.add(st);
+    renderKeys();
+  });
+  window.addEventListener('keyup', e => {
+    if (mode !== 'chord' || !held.has(e.code)) return;
+    e.preventDefault();
+    held.delete(e.code);
+    if (held.size === 0) evaluateChord();
+    renderKeys();
+  });
+  window.addEventListener('blur', () => { resetChord(); renderKeys(); setFocus(false); });
+  window.addEventListener('focus', () => setFocus(true));
+  document.addEventListener('pointerdown', () => setFocus(true));
+
+  function evaluateChord() {
+    const cur = current(); if (!cur) return;
+    const got = new Set(chordKeys);
+    const codes = new Set(chordCodes);
+    chordKeys.clear(); chordCodes.clear();
+    if (sameSet(got, cur.keys)) {
+      markHit();
+      result = { ok: true, got, codes };
+      setFeedback(`${cur.w}  ✓`, 'good');
+      flashGood();
+      clearTimeout(flashTimer);
+      flashTimer = setTimeout(() => { result = null; advance(); }, 260);
+    } else {
+      markMiss();
+      result = { ok: false, got, codes };
+      setFeedback(`You pressed ${formatStroke(got) || 'nothing'}, the stroke is ${cur.s}. Try again.`, 'bad');
+      renderAll();
+    }
+  }
+  function flashGood() {
+    const b = $('boards'); b.classList.add('flash-good');
+    setTimeout(() => b.classList.remove('flash-good'), 240);
+    renderKeys();
+  }
+
+  // ---------- Plover (word) mode input ----------
+  const input = $('wordInput');
+  // Plover types a word one character at a time, so wait for it to finish before checking.
+  let inputTimer = 0;
+  input.addEventListener('input', () => { clearTimeout(inputTimer); inputTimer = setTimeout(checkWord, 150); });
+  function checkWord() {
+    if (mode !== 'word') return;
+    const cur = current(); if (!cur) return;
+    const typed = input.value.trim();
+    if (!typed) return;
+    const norm = s => s.toLowerCase();
+    if (typed === cur.w || (norm(typed) === norm(cur.w) && cur.w !== 'I')) {
+      markHit(); setFeedback(`${cur.w}  ✓`, 'good'); input.value = ''; flashGood(); setTimeout(advance, 120);
+    } else {
+      markMiss();
+      setFeedback(`Plover typed "${typed}". The stroke for ${cur.w} is ${cur.s}.`, 'bad');
+      input.value = '';
+      renderAll();
+    }
+  }
+
+  // ---------- rendering ----------
+  function setFeedback(t, cls) { const f = $('feedback'); f.textContent = t; f.className = 'feedback' + (cls ? ' ' + cls : ''); }
+  function setFocus(on) {
+    $('focusDot').classList.toggle('on', on && mode === 'chord');
+    if (mode === 'chord') $('statusText').textContent = on ? 'Listening. Hold a chord, then let go.' : 'Click the page to start chording';
+  }
+  function showHint() { return hintMode === 'always' || wordMissed; }
+
+  function renderAll() { renderStrip(); renderHint(); renderStats(); renderKeys(); renderMode(); }
+
+  function renderStrip() {
+    const s = $('strip'); s.innerHTML = '';
+    const from = Math.max(0, pos - 2);
+    for (let i = from; i < Math.min(queue.length, pos + 8); i++) {
+      const sp = document.createElement('span');
+      sp.textContent = queue[i].w;
+      if (i < pos) sp.className = 'done'; else if (i === pos) sp.className = 'cur';
+      s.appendChild(sp);
+    }
+  }
+  function renderHint() {
+    const h = $('hintline'); const cur = current();
+    if (!cur) { h.innerHTML = ''; return; }
+    if (!showHint()) { h.innerHTML = '<span class="lbl">Hint hidden until you miss</span>'; return; }
+    const ks = ORDER.filter(k => cur.keys.has(k));
+    const q = ks.map(k => `<span class="qk">${esc(ALT_QWERTY[k] || MAIN_QWERTY[k])}</span>`).join(' + ');
+    h.innerHTML = `<span><span class="lbl">Steno</span>${esc(cur.s)}</span><span><span class="lbl">Press together</span>${q}</span>`;
+  }
+  function renderStats() {
+    $('sProgress').textContent = `${Math.min(pos, queue.length)} / ${queue.length}`;
+    const mins = startedAt ? (Date.now() - startedAt) / 60000 : 0;
+    $('sWpm').textContent = mins > 0.05 ? Math.round(pos / mins) : 0;
+    $('sAcc').textContent = attempts ? Math.round(100 * (attempts - misses) / attempts) + '%' : '100%';
+    $('sMiss').textContent = misses;
+  }
+  function renderKeys() {
+    const cur = current();
+    const target = cur && showHint() ? cur.keys : new Set();
+    const res = result;
+    const missTarget = cur ? cur.keys : new Set();
+    for (const el of stenoKeys) {
+      const k = el.dataset.steno;
+      el.className = el.className.replace(/\s(target|pressed|hit|extra|missed)\b/g, '');
+      if (chordKeys.has(k)) el.classList.add('pressed');
+      else if (res && res.ok && res.got.has(k)) el.classList.add('hit');
+      else if (res && !res.ok) {
+        if (res.got.has(k) && missTarget.has(k)) el.classList.add('hit');
+        else if (res.got.has(k)) el.classList.add('extra');
+        else if (missTarget.has(k)) el.classList.add('missed');
+      } else if (target.has(k)) el.classList.add('target');
+    }
+    for (const el of qwertyKeys) {
+      const code = el.dataset.code, k = CODE_TO_STENO[code];
+      el.className = el.className.replace(/\s(target|pressed|hit|extra|missed)\b/g, '');
+      if (!k) continue;
+      if (chordCodes.has(code)) el.classList.add('pressed');
+      else if (res && res.ok && res.codes.has(code)) el.classList.add('hit');
+      else if (res && !res.ok) {
+        if (res.codes.has(code) && missTarget.has(k)) el.classList.add('hit');
+        else if (res.codes.has(code)) el.classList.add('extra');
+        else if (missTarget.has(k) && !anyCodePressed(res.codes, k)) el.classList.add('missed');
+      } else if (target.has(k)) el.classList.add('target');
+    }
+  }
+  // S and * have several QWERTY keys; only mark the alternates missed if none of them was pressed.
+  function anyCodePressed(codes, k) { return [...codes].some(c => CODE_TO_STENO[c] === k); }
+
+  function renderMode() {
+    $('modeChord').setAttribute('aria-pressed', mode === 'chord');
+    $('modeWord').setAttribute('aria-pressed', mode === 'word');
+    const chordOnly = lesson().chordOnly;
+    $('modeWord').disabled = !!chordOnly;
+    $('wordBox').hidden = mode !== 'word';
+    if (mode === 'chord') {
+      $('modeTip').innerHTML = '<b>Plover must be off</b> in this mode.';
+      setFocus(document.hasFocus());
+    } else {
+      $('focusDot').classList.toggle('on', document.activeElement === input);
+      $('statusText').textContent = 'Plover mode: stroke into the box';
+      $('modeTip').innerHTML = '<b>Plover must be on</b> in this mode.';
+    }
+  }
+
+  // ---------- controls ----------
+  const sel = $('lessonSel');
+  for (const l of LESSONS) { const o = document.createElement('option'); o.value = l.id; o.textContent = `${l.name} (${l.words.length})`; sel.appendChild(o); }
+  sel.value = lessonId;
+  sel.addEventListener('change', () => {
+    lessonId = sel.value; store.set('lesson', lessonId);
+    if (lesson().chordOnly && mode === 'word') setMode('chord');
+    start(); sel.blur();
+  });
+  $('hintSel').value = hintMode;
+  $('hintSel').addEventListener('change', e => { hintMode = e.target.value; store.set('hints', hintMode); renderAll(); e.target.blur(); });
+  $('orderSel').value = order;
+  $('orderSel').addEventListener('change', e => { order = e.target.value; store.set('order', order); start(); e.target.blur(); });
+  $('restartBtn').addEventListener('click', e => { start(); e.currentTarget.blur(); });
+  $('againBtn').addEventListener('click', () => start());
+  $('missBtn').addEventListener('click', () => { const ws = lesson().words.filter(([w]) => missedWords.has(w)); start(ws); });
+  function setMode(m) {
+    mode = m; store.set('mode', m); resetChord(); result = null; setFeedback('');
+    renderAll();
+    if (m === 'word') input.focus(); else input.blur();
+  }
+  $('modeChord').addEventListener('click', e => { setMode('chord'); e.currentTarget.blur(); });
+  $('modeWord').addEventListener('click', e => { setMode('word'); });
+  input.addEventListener('focus', renderMode);
+  input.addEventListener('blur', renderMode);
+  setInterval(() => { if (startedAt && !$('practice').hidden) renderStats(); }, 1000);
+
+  if (lesson().chordOnly && mode === 'word') mode = 'chord';
+  start();
+
+  // Exposed for a quick self-check in the console.
+  window.__stq = { parseStroke, formatStroke, LESSONS };
+})();
+</script>

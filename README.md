@@ -11,7 +11,7 @@ Most steno lessons show the steno layout (`S T K P W H R ...`), which tells you 
 ## What you need
 
 1. **A keyboard that registers many keys at once.** A steno chord can be 10 or more keys pressed together. Many cheap keyboards stop at 6, and Plover won't work on those. Look for "NKRO" (N-key rollover) in the specs, and use the cable rather than wireless if your keyboard has both. See [Check your keyboard](#check-your-keyboard) to test it.
-2. **Plover**, the free steno program. Download it from the [Plover releases page](https://github.com/opensteno/plover/releases) and install it. It runs on Windows, macOS and Linux.
+2. **Plover**, the free steno program. Download it from https://github.com/opensteno/plover/ (the installers are on its [releases page](https://github.com/opensteno/plover/releases)) and install it. It runs on Windows, macOS and Linux.
 3. **A modern browser.** Chrome, Edge, Firefox or Safari.
 
 ## Set up Plover

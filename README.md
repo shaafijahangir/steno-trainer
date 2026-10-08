@@ -118,4 +118,6 @@ The page is a single file. Download `index.html` and open it in your browser. It
 
 ## Credits and license
 
+Inspired by the [Typey Type introduction lesson](https://didoesdigital.com/typey-type/lessons/fundamentals/introduction/). The "First words" lesson uses the same words.
+
 Stroke data and the QWERTY key map come from [Plover](https://github.com/opensteno/plover), which is GPL-2.0-or-later. This project uses the same license; see [LICENSE](LICENSE).

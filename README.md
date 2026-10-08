@@ -112,6 +112,7 @@ The page is a single file. Download `index.html` and open it in your browser. It
 
 ## Where to learn more
 
+- [Open Steno Project](https://opensteno.org/): general information about open-source stenography and Plover.
 - [Typey Type](https://didoesdigital.com/typey-type/): a full steno course with many more lessons.
 - [Art of Chording](https://www.artofchording.com/): a free book on how steno theory works.
 - [Plover wiki](https://plover.wiki/): setup help for Plover.
